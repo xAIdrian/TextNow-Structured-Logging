@@ -1,5 +1,9 @@
 # TextNow-Structured-Logging
 
+> The morale effects are startling. Enthusiasm jumps when there is a running system, even a simple one. Efforts redouble when the first picture from a new graphics software system appears on the screen, even if it is only a rectangle. One always has, at every stage in the process, a working system. I find that teams can grow much more complex entities in four months than they can build.
+
+> —FREDERICK P. BROOKS, JR., The Mythical Man-Month
+
 ## The Mission
 
 Our mission is to give our developers a comprehensive strategy and tooling to quickly and easily access uploaded logs in a human-readable structure for debugging purposes, additionally enabling access to these logs by data teams in a machine readable format.
@@ -155,6 +159,9 @@ We should avoid logging secrets. Secrets you should avoid logging include, but a
 
 ## The Technology
 ### Proof of Concept
+
+We'll be using [logback](http://logback.qos.ch/index.html) as our structured logging library to format our existing logs into structure, using a factory pattern. The resulting product, i.e. logback, is faster and has a smaller footprint than all existing logging systems, sometimes by a wide margin. Just as importantly, logback offers unique and rather useful features missing in other logging systems.
+
 
 ## Long-Term Goals
 
