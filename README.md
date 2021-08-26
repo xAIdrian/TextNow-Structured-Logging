@@ -27,4 +27,55 @@ persistent debug log that are used for QA testing.  These are communicated in Pu
 
 This White Paper set out to explain not only the problem faced by our current approach to debug logging but also to present an improved solution aligned with the goals of the organization.
 
-## The Current State of Logging
+## The Current State of Backend Hosted Developer Logs
+
+As mentioned previously, advanced debug logging giving us deeper insights into user behavior around critical events has not been maintained over the years and is quite difficult to access.  Someone who has not been inststructed on how the current system works has a difficult understanding its value, choosing rather to leave it alone and pursue their own approach. Confluence documentation is several years old at best.
+
+The following cases outline when a client will upload a log set to S3 through [our logging module](https://github.com/Enflick/textnow-android-logging) when :
+
+- The client experiences a fatal crash, logs are uploaded on the next instance of app launch
+- The client experiences an ANR or non fatal incident logs are uploaded
+- The user manually uploads logs from the about section of the app
+- A TextNow employee begins a diagnostics session
+
+These logs are often very difficult to infer anything meaninful.
+```
+2021-08-02 12:18:43    ERROR  TextNow                        [UncaughtExceptionHandler] Uncaught exception on thread main (2)
+2021-08-02 12:18:43    ERROR  TextNow                        [UncaughtExceptionHandler] com.enflick.android.TextNow.bubbles.BubbleChatActivity cannot be cast to com.enflick.android.TextNow.activities.MainActivity
+2021-08-02 12:18:43    ERROR  TextNow                        [UncaughtExceptionHandler] MessagesRecyclerView.java:7 - com.enflick.android.TextNow.views.MessagesRecyclerView:performContextAction
+2021-08-02 12:18:43    ERROR  TextNow                        [UncaughtExceptionHandler] ContextActionBarHelper.java:1 - com.enflick.android.TextNow.activities.ContextActionBarHelper$SelectionModeCallback:onActionItemClicked
+2021-08-02 12:18:43    ERROR  TextNow                        [UncaughtExceptionHandler] DecorView.java:2660 - com.android.internal.policy.DecorView$ActionModeCallback2Wrapper:onActionItemClicked
+2021-08-02 12:18:43    ERROR  TextNow                        [UncaughtExceptionHandler] SupportActionModeWrapper.java:1 - l.b.p.e$a:c
+2021-08-02 12:18:43    ERROR  TextNow                        [UncaughtExceptionHandler] AppCompatDelegateImpl.java:1 - androidx.appcompat.app.AppCompatDelegateImpl$d:c
+2021-08-02 12:18:43    ERROR  TextNow                        [UncaughtExceptionHandler] StandaloneActionMode.java:1 - l.b.p.d:a
+2021-08-02 12:18:43    ERROR  TextNow                        [UncaughtExceptionHandler] MenuBuilder.java:1 - l.b.p.i.g:e
+2021-08-02 12:18:43    ERROR  TextNow                        [UncaughtExceptionHandler] MenuBuilder.java:4 - l.b.p.i.g:s
+2021-08-02 12:18:43    ERROR  TextNow                        [UncaughtExceptionHandler] ActionMenuView.java:2 - androidx.appcompat.widget.ActionMenuView:d
+2021-08-02 12:18:43    ERROR  TextNow                        [UncaughtExceptionHandler] ActionMenuItemView.java:2 - androidx.appcompat.view.menu.ActionMenuItemView:e
+2021-08-02 12:18:43    ERROR  TextNow                        [UncaughtExceptionHandler] null:3 - androidx.appcompat.view.menu.ActionMenuItemView:onClick
+2021-08-02 12:18:43    ERROR  TextNow                        [UncaughtExceptionHandler] View.java:7448 - android.view.View:performClick
+2021-08-02 12:18:43    ERROR  TextNow                        [UncaughtExceptionHandler] View.java:7425 - android.view.View:performClickInternal
+2021-08-02 12:18:43    ERROR  TextNow                        [UncaughtExceptionHandler] View.java:810 - android.view.View:access$3600
+2021-08-02 12:18:43    ERROR  TextNow                        [UncaughtExceptionHandler] View.java:28305 - android.view.View$PerformClick:run
+2021-08-02 12:18:43    ERROR  TextNow                        [UncaughtExceptionHandler] Handler.java:938 - android.os.Handler:handleCallback
+2021-08-02 12:18:43    ERROR  TextNow                        [UncaughtExceptionHandler] Handler.java:99 - android.os.Handler:dispatchMessage
+2021-08-02 12:18:43    ERROR  TextNow                        [UncaughtExceptionHandler] Looper.java:223 - android.os.Looper:loop
+2021-08-02 12:18:43    ERROR  TextNow                        [UncaughtExceptionHandler] ActivityThread.java:7660 - android.app.ActivityThread:main
+2021-08-02 12:18:43    ERROR  TextNow                        [UncaughtExceptionHandler] Method.java:-2 - java.lang.reflect.Method:invoke
+2021-08-02 12:18:43    ERROR  TextNow                        [UncaughtExceptionHandler] RuntimeInit.java:592 - com.android.internal.os.RuntimeInit$MethodAndArgsCaller:run
+2021-08-02 12:18:43    ERROR  TextNow                        [UncaughtExceptionHandler] ZygoteInit.java:947 - com.android.internal.os.ZygoteInit:main
+2021-08-02 12:18:43    DEBUG  TextNow                        [UncaughtExceptionHandler] uncaughtException: stopping call service due to uncaught exception
+```
+
+With the local implementation to take these logs off of the main thread, put them in file storage, and eventually upload them are encapsulated within the current `textnow-android` module.  Several concerns exist with the existing solution and have been documented :
+
+- One upload request available/alive at a time
+- ExistingWorkPolicy.KEEP (LogUploadWorker) will drop incoming log uploads if previous uploads fails or is in progress.  Any newly appended log upload task will never execute since the unique chain has failed.
+
+![image](https://user-images.githubusercontent.com/7444521/130965886-61357144-2a1f-4638-90b7-2a7814e73890.png)
+
+
+## The Solution
+### Overview
+
+### Objectives
