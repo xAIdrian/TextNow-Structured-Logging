@@ -83,6 +83,9 @@ With the local implementation to take these logs off of the main thread, put the
 
 
 ## The Solution
+
+Basically, we are going to build up our existing logging module for Android.  Providing more contextual, structured information to the differing log levels.  Using Android's most recent libraries to manage the local storage and asynchronous uploading of the logs. Determined by updated conditions to perform our uploads and manage the cache.
+
 ### Overview
 
 In practice, most developers now implement structured logging to help application users interact with their log files through automated processes. Structured logging takes plain text application logs and converts them into a set of data points that can be more easily analyzed by a machine on the backend. Addresses three key issues that arise when dealing with log files in the standard "plain text" format :
@@ -95,7 +98,12 @@ Consider one object for each logged event. Logs will always include a timestamp 
 
 The app user's debug logs are stored in the device in the form of a database or a file. All the operations are performed in the device’s native layer. The stored logs are processed and split into chunks of predetermined size. The chunks of logs are sent to the server periodically. The chunks are deleted from the device once they are successfully transmitted to the server.
 
+We can create the optimal solution by taking a hybrid approach and incorporating both volume based and selective logging.
+
+
 ### Implementation Objectives
+
+Volume Logging – Input focused: Log all the sources, and let the analysts sort it out.
 
 Logger sends data to a file, which we can then archive, parse, or otherwise use to match the needs that we have for that data.  The files will be managed with an LRU cache wrapping Android's file management system where we will be storing the logs. With set conditions, likely app start, the cache conditions will be checked asynchrnonously and any "stale" logs removed.
 
@@ -103,14 +111,50 @@ The logging is for debugging purposes. Piecing together critical moments, withou
 
 For the initial implementation we will be using popular logging libraries, Logback natively implementing the SLF4J API to generate locally structured logs.  These logs will then be serialized and uploaded to Embrace. Where we will have the ability to filter and search for specific elements. Eventuall this will encourage monitoring and learning, parcelable and fed to data science and machine learning engines.
 
-Will be kept performant while being able to handle a high number of requests in parallel. Users can upload logs directly through the wireless network after being parsed on the client. Only necessary information is recorded to reduce the log size
+Will be kept performant while being able to handle a high number of requests in parallel. Users can upload logs directly through the wireless network after being parsed on the client. Only necessary information is recorded to reduce the log size.
+
+The security of the uploaded logs will be ensured with Embrace and locally with Android's encrypted scoped storage APIs.
 
 ### Logging Strategy Objectives
 
-What events are significant enough to log and in which modules?
+Selective Logging – Output focused: Pick and choose what logs you want, and how you want them, and hope you didn’t forget anything.
 
+The greater Android team needs to understand and agree on what events are significant enough to log and in which modules.  This can be categorized into our log levels ERROR, WARN, INFO, DEBUG, & VERBOSE.
+
+| Log Level | Description |
+| ----------- | ----------- |
+| ERROR | Logs that highlight when the current flow of execution is stopped due to a failure. These should indicate a failure in the current activity, not an application-wide failure. |
+| WARN | Logs that highlight an abnormal or unexpected event in the application flow, but do not otherwise cause the application execution to stop. |
+| INFO | Logs that track the general flow of the application. These logs should have long-term value. |
+| DEBUG | Logs that are used for interactive investigation during development. These logs should primarily contain information useful for debugging and have no long-term value. |
+| VERGBOSE | Logs that track the general flow of the application. These logs should have long-term value. |
+
+Conditions within our app flow that could result in an exception being thrown, following the "fail fast, fail early" mentality, will need to be logged through our new and improved logging module so the exception can be added to the log and uploaded.
+
+We should NEVER log PII.  PII you should avoid logging includes, but is not limited to:
+
+- First Name
+- Last Name
+- Username
+- Gender
+- Birthday
+- Mailing/Billing Addresses
+- Email Addresses
+- Phone Numbers
+- Social Security Number
+- Credit Card Numbers
+
+We should avoid logging secrets. Secrets you should avoid logging include, but are not limited to:
+
+- Usernames
+- Passwords
+- API Keys
+- Encryption Keys
+- Connection Strings
+- Magic URLs
 
 ## The Technology
+### Proof of Concept
 
 ## Long-Term Goals
 
@@ -122,4 +166,12 @@ Uploaded logs are compressed, and the log file is divided; for initial upload lo
 
 Consider alternative entry points to upload debug logs
 
-Improve customer confidence by showing a better message when uploading logs, to assure them someone is going to look at them.
+Improve customer confidence by showing a better message when uploading logs, to assure them someone is going to look at them. Drop down providing scope of debug log issue: 
+
+- Calling → further breakdown → one way audio, dropped etc.
+- messaging
+- internet connectivity wireless service
+- billing/premium
+- spam/abuse/fraud
+- ads/inappropreate ads
+- other
