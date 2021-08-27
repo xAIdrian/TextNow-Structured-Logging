@@ -162,6 +162,8 @@ We should avoid logging secrets. Secrets you should avoid logging include, but a
 
 We'll be using [logback](http://logback.qos.ch/index.html) as our structured logging library to format our existing logs into structure, using a factory pattern. The resulting product, i.e. logback, is faster and has a smaller footprint than all existing logging systems, sometimes by a wide margin. Just as importantly, logback offers unique and rather useful features missing in other logging systems.
 
+![ Blank UML-2](https://user-images.githubusercontent.com/7444521/131144552-29a62384-cbfc-434e-a0ec-4fc94b205e48.png)
+
 
 ## Long-Term Goals
 
